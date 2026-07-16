@@ -17,7 +17,7 @@ export function BlogPage() {
             <FadeIn key={post.slug} delay={i * 0.05}>
               <Link to={`/blog/${post.slug}`} className="group block h-full">
                 <Card className="flex h-full flex-col">
-                  <div className="flex items-center gap-2">
+                  <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                     <Badge>{post.category}</Badge>
                     <span className="text-xs text-slate-500">
                       {post.date} · {post.readTime}

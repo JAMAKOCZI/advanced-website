@@ -13,52 +13,38 @@ import {
   Button,
   Card,
   Container,
+  controlClassName,
   FadeIn,
   Input,
   PageHeader,
   Section,
   Textarea,
 } from '../components/ui'
-
-type FormState = {
-  name: string
-  email: string
-  company: string
-  budget: string
-  message: string
-}
-
-const empty: FormState = {
-  name: '',
-  email: '',
-  company: '',
-  budget: '',
-  message: '',
-}
+import {
+  emptyForm,
+  focusFormField,
+  validateContactForm,
+  type FormErrors,
+  type FormState,
+} from '../lib/contactForm'
+import { cn } from '../lib/utils'
 
 export function ContactPage() {
-  const [form, setForm] = useState<FormState>(empty)
-  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
+  const [form, setForm] = useState<FormState>(emptyForm)
+  const [errors, setErrors] = useState<FormErrors>({})
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
 
-  function validate(values: FormState) {
-    const next: Partial<Record<keyof FormState, string>> = {}
-    if (values.name.trim().length < 2) next.name = 'Podaj imię (min. 2 znaki).'
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) next.email = 'Niepoprawny e-mail.'
-    if (values.message.trim().length < 10) next.message = 'Wiadomość min. 10 znaków.'
-    return next
-  }
-
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
-    const next = validate(form)
+    const next = validateContactForm(form)
     setErrors(next)
     if (Object.keys(next).length) {
       const first = Object.keys(next)[0]
-      const el = formRef.current?.querySelector<HTMLElement>(`[name="${first}"]`)
-      el?.focus()
+      if (first && formRef.current) {
+        focusFormField(formRef.current, first)
+      }
       return
     }
 
@@ -66,7 +52,7 @@ export function ContactPage() {
     await new Promise((r) => setTimeout(r, 900))
     setLoading(false)
     setSent(true)
-    setForm(empty)
+    setForm(emptyForm)
   }
 
   return (
@@ -132,7 +118,7 @@ export function ContactPage() {
                         name="budget"
                         value={form.budget}
                         onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))}
-                        className="h-11 w-full rounded-xl border border-white/10 bg-black/20 px-4 text-slate-100 outline-none focus:border-violet-400/60"
+                        className={cn(controlClassName)}
                       >
                         <option value="">Wybierz zakres</option>
                         <option value="<20k">&lt; 20k PLN</option>

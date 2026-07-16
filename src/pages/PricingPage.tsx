@@ -17,34 +17,42 @@ export function PricingPage() {
           description="Toggle miesięcznie / rocznie. Kwoty demo w PLN — podłącz Stripe gdy będziesz gotowy."
         />
 
-        <div className="mb-10 flex items-center justify-center gap-3">
-          <span className={cn('text-sm', !yearly ? 'text-white' : 'text-slate-500')}>
-            Miesięcznie
-          </span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={yearly}
-            aria-label="Rozliczenie roczne"
-            onClick={() => setYearly((v) => !v)}
-            className={cn(
-              'relative h-8 w-14 rounded-full border transition',
-              yearly ? 'border-violet-400/50 bg-violet-500/30' : 'border-white/15 bg-white/10',
-            )}
+        <div className="mb-10 flex flex-wrap items-center justify-center gap-3">
+          <div
+            className="inline-flex min-h-11 flex-wrap items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1"
+            role="group"
+            aria-label="Okres rozliczeniowy"
           >
-            <span
+            <button
+              type="button"
+              onClick={() => setYearly(false)}
+              aria-pressed={!yearly}
               className={cn(
-                'absolute top-0.5 h-6 w-6 rounded-full bg-white transition',
-                yearly ? 'left-7' : 'left-0.5',
+                'min-h-11 rounded-full px-4 text-sm font-medium transition',
+                !yearly
+                  ? 'bg-white/10 text-white shadow-sm'
+                  : 'text-slate-500 hover:text-slate-300',
               )}
-            />
-          </button>
-          <span className={cn('text-sm', yearly ? 'text-white' : 'text-slate-500')}>
-            Rocznie <Badge className="ml-1 !py-0">−20%</Badge>
-          </span>
+            >
+              Miesięcznie
+            </button>
+            <button
+              type="button"
+              onClick={() => setYearly(true)}
+              aria-pressed={yearly}
+              className={cn(
+                'inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition',
+                yearly
+                  ? 'bg-violet-500/30 text-white shadow-sm'
+                  : 'text-slate-500 hover:text-slate-300',
+              )}
+            >
+              Rocznie <Badge className="!py-0">−20%</Badge>
+            </button>
+          </div>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-3">
+        <div className="grid gap-5 pt-4 lg:grid-cols-3">
           {pricingPlans.map((plan, i) => {
             const price = yearly ? plan.priceYearly : plan.priceMonthly
             return (
@@ -52,7 +60,7 @@ export function PricingPage() {
                 <Card
                   className={cn(
                     'relative flex h-full flex-col',
-                    plan.highlighted && 'border-violet-400/40 shadow-[var(--shadow-glow)]',
+                    plan.highlighted && 'border-violet-400/40 pt-4 shadow-[var(--shadow-glow)]',
                   )}
                   hover={false}
                 >

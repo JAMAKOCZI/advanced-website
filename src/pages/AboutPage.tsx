@@ -46,7 +46,7 @@ export function AboutPage() {
                   <h3 className="mt-1 text-lg font-semibold text-white">{item.title}</h3>
                   <p className="mt-1 text-sm text-slate-400">{item.text}</p>
                 </div>
-                <div className="absolute left-0 top-1.5 h-6 w-6 rounded-full border-2 border-violet-400 bg-[#0a0b14] sm:left-1/2 sm:-translate-x-1/2" />
+                <div className="absolute left-0 top-1.5 h-6 w-6 rounded-full border-2 border-violet-400 bg-[var(--surface)] sm:left-1/2 sm:-translate-x-1/2" />
                 <div />
               </div>
             </FadeIn>

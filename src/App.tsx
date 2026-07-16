@@ -1,38 +1,28 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, type ComponentType } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { ThemeProvider } from './hooks/useTheme'
 
-const HomePage = lazy(() =>
-  import('./pages/HomePage').then((m) => ({ default: m.HomePage })),
-)
-const FeaturesPage = lazy(() =>
-  import('./pages/FeaturesPage').then((m) => ({ default: m.FeaturesPage })),
-)
-const DashboardPage = lazy(() =>
-  import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })),
-)
-const WorkPage = lazy(() =>
-  import('./pages/WorkPage').then((m) => ({ default: m.WorkPage })),
-)
-const BlogPage = lazy(() =>
-  import('./pages/BlogPage').then((m) => ({ default: m.BlogPage })),
-)
-const BlogPostPage = lazy(() =>
-  import('./pages/BlogPostPage').then((m) => ({ default: m.BlogPostPage })),
-)
-const PricingPage = lazy(() =>
-  import('./pages/PricingPage').then((m) => ({ default: m.PricingPage })),
-)
-const AboutPage = lazy(() =>
-  import('./pages/AboutPage').then((m) => ({ default: m.AboutPage })),
-)
-const ContactPage = lazy(() =>
-  import('./pages/ContactPage').then((m) => ({ default: m.ContactPage })),
-)
-const NotFoundPage = lazy(() =>
-  import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
-)
+/** Lazy-load a named export as the default component for React.lazy */
+function lazyNamed(loader: () => Promise<unknown>, name: string) {
+  return lazy(async () => {
+    const mod = (await loader()) as Record<string, ComponentType>
+    const Comp = mod[name]
+    if (!Comp) throw new Error(`Missing export: ${name}`)
+    return { default: Comp }
+  })
+}
+
+const HomePage = lazyNamed(() => import('./pages/HomePage'), 'HomePage')
+const FeaturesPage = lazyNamed(() => import('./pages/FeaturesPage'), 'FeaturesPage')
+const DashboardPage = lazyNamed(() => import('./pages/DashboardPage'), 'DashboardPage')
+const WorkPage = lazyNamed(() => import('./pages/WorkPage'), 'WorkPage')
+const BlogPage = lazyNamed(() => import('./pages/BlogPage'), 'BlogPage')
+const BlogPostPage = lazyNamed(() => import('./pages/BlogPostPage'), 'BlogPostPage')
+const PricingPage = lazyNamed(() => import('./pages/PricingPage'), 'PricingPage')
+const AboutPage = lazyNamed(() => import('./pages/AboutPage'), 'AboutPage')
+const ContactPage = lazyNamed(() => import('./pages/ContactPage'), 'ContactPage')
+const NotFoundPage = lazyNamed(() => import('./pages/NotFoundPage'), 'NotFoundPage')
 
 function PageLoader() {
   return (

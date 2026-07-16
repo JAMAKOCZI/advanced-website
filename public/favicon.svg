@@ -1,12 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
   <defs>
-    <linearGradient id="g" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+    <linearGradient id="g" x1="12" y1="8" x2="52" y2="56" gradientUnits="userSpaceOnUse">
       <stop stop-color="#7C5CFF"/>
-      <stop offset="0.5" stop-color="#22D3EE"/>
-      <stop offset="1" stop-color="#34D399"/>
+      <stop offset="1" stop-color="#22D3EE"/>
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="16" fill="#0A0B14"/>
-  <path d="M32 12L48 42H16L32 12Z" stroke="url(#g)" stroke-width="3.5" stroke-linejoin="round"/>
-  <circle cx="32" cy="36" r="5" fill="url(#g)"/>
+  <!-- Dark rounded square brand plate -->
+  <rect width="64" height="64" rx="14" fill="#0A0B14"/>
+  <!-- Zap bolt (aligned with brand mark) -->
+  <path
+    d="M36.5 12L22 34.5h10.2L28.5 52 46 28.5H34.8L36.5 12z"
+    fill="url(#g)"
+  />
 </svg>

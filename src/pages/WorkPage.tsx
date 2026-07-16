@@ -1,26 +1,31 @@
 import { useMemo, useState } from 'react'
-import { Badge, Card, Container, FadeIn, PageHeader, Section } from '../components/ui'
-import { projects, type Project } from '../data/content'
+import { ProjectCard } from '../components/ProjectCard'
+import { Badge, Button, Card, Container, FadeIn, Input, PageHeader, Section } from '../components/ui'
+import { projects } from '../data/content'
+import {
+  deriveCategories,
+  filterProjects,
+  type ProjectCategoryFilter,
+} from '../lib/projectFilter'
 import { cn } from '../lib/utils'
 
-const categories = ['All', 'Product', 'Brand', 'Platform', 'AI'] as const
+const categories = deriveCategories(projects)
 
 export function WorkPage() {
-  const [filter, setFilter] = useState<(typeof categories)[number]>('All')
+  const [filter, setFilter] = useState<ProjectCategoryFilter>('All')
   const [query, setQuery] = useState('')
 
-  const filtered = useMemo(() => {
-    return projects.filter((p) => {
-      const matchCat = filter === 'All' || p.category === filter
-      const q = query.trim().toLowerCase()
-      const matchQ =
-        !q ||
-        p.title.toLowerCase().includes(q) ||
-        p.summary.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q)
-      return matchCat && matchQ
-    })
-  }, [filter, query])
+  const filtered = useMemo(
+    () => filterProjects(projects, filter, query),
+    [filter, query],
+  )
+
+  const clearFilters = () => {
+    setFilter('All')
+    setQuery('')
+  }
+
+  const hasActiveFilters = filter !== 'All' || query.trim().length > 0
 
   return (
     <Section>
@@ -40,7 +45,7 @@ export function WorkPage() {
                 onClick={() => setFilter(c)}
                 aria-pressed={filter === c}
                 className={cn(
-                  'rounded-full border px-4 py-2 text-sm font-medium transition',
+                  'inline-flex min-h-11 items-center rounded-full border px-4 py-2.5 text-sm font-medium transition',
                   filter === c
                     ? 'border-violet-400/50 bg-violet-500/20 text-white'
                     : 'border-white/10 bg-white/5 text-slate-400 hover:text-white',
@@ -52,12 +57,11 @@ export function WorkPage() {
           </div>
           <label className="block w-full sm:max-w-xs">
             <span className="sr-only">Szukaj projektu</span>
-            <input
+            <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Szukaj projektu…"
               aria-label="Szukaj projektu"
-              className="h-11 w-full rounded-xl border border-white/10 bg-black/20 px-4 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-violet-400/60"
             />
           </label>
         </div>
@@ -69,47 +73,29 @@ export function WorkPage() {
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((p, i) => (
             <FadeIn key={p.id} delay={i * 0.04}>
-              <ProjectCard project={p} />
+              <ProjectCard project={p} variant="full" />
             </FadeIn>
           ))}
         </div>
 
         {filtered.length === 0 ? (
-          <Card className="mt-6 text-center text-slate-400" hover={false}>
-            Brak projektów dla tych filtrów. Wyczyść wyszukiwanie lub wybierz inną kategorię.
+          <Card className="mt-6 text-center" hover={false}>
+            <Badge className="mb-3">Brak wyników</Badge>
+            <p className="font-display text-lg font-semibold text-white">
+              Nic nie pasuje do tych filtrów
+            </p>
+            <p className="mx-auto mt-2 max-w-md text-sm text-slate-400">
+              Spróbuj innej frazy albo wyczyść filtry, żeby zobaczyć wszystkie {projects.length}{' '}
+              projekty w portfolio.
+            </p>
+            {hasActiveFilters ? (
+              <Button variant="secondary" className="mt-5" onClick={clearFilters}>
+                Wyczyść filtry
+              </Button>
+            ) : null}
           </Card>
         ) : null}
       </Container>
     </Section>
-  )
-}
-
-function ProjectCard({ project }: { project: Project }) {
-  return (
-    <Card className="h-full overflow-hidden p-0">
-      <div className={`relative h-36 bg-gradient-to-br ${project.color}`}>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.25),transparent_45%)]" />
-        <div className="absolute bottom-3 left-3">
-          <Badge className="!bg-black/30 !text-white">{project.category}</Badge>
-        </div>
-      </div>
-      <div className="p-6">
-        <div className="flex items-start justify-between gap-3">
-          <h2 className="font-display text-xl font-semibold text-white">{project.title}</h2>
-          <span className="text-sm text-slate-500">{project.year}</span>
-        </div>
-        <p className="mt-2 text-sm leading-relaxed text-slate-400">{project.summary}</p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {project.metrics.map((m) => (
-            <span
-              key={m}
-              className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-slate-300"
-            >
-              {m}
-            </span>
-          ))}
-        </div>
-      </div>
-    </Card>
   )
 }

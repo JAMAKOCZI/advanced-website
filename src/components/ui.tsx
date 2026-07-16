@@ -85,9 +85,9 @@ const buttonVariants = {
 } as const
 
 const buttonSizes = {
-  sm: 'h-9 px-3 text-sm',
-  md: 'h-11 px-5 text-sm',
-  lg: 'h-12 px-6 text-base',
+  sm: 'min-h-11 h-11 px-3 text-sm',
+  md: 'min-h-11 h-11 px-5 text-sm',
+  lg: 'min-h-12 h-12 px-6 text-base',
 } as const
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -109,6 +109,10 @@ function buttonClassName(
   )
 }
 
+type AsChildProps = {
+  className?: string
+}
+
 export function Button({
   className,
   variant = 'primary',
@@ -120,11 +124,10 @@ export function Button({
   const classes = buttonClassName(variant, size, className)
 
   if (asChild && isValidElement(children)) {
-    const child = Children.only(children) as ReactElement<{ className?: string }>
+    const child = Children.only(children) as ReactElement<AsChildProps>
     return cloneElement(child, {
       className: cn(classes, child.props.className),
-      ...props,
-    } as never)
+    })
   }
 
   return (
@@ -134,23 +137,19 @@ export function Button({
   )
 }
 
+/** Shared control surface for inputs, textareas, selects */
+export const controlClassName =
+  'h-11 w-full rounded-xl border border-white/10 bg-black/20 px-4 text-base text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20'
+
 export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <input
-      className={cn(
-        'h-11 w-full rounded-xl border border-white/10 bg-black/20 px-4 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20',
-        className,
-      )}
-      {...props}
-    />
-  )
+  return <input className={cn(controlClassName, className)} {...props} />
 }
 
 export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
       className={cn(
-        'min-h-32 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20',
+        'min-h-32 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20',
         className,
       )}
       {...props}

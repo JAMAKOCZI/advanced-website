@@ -1,15 +1,29 @@
 import { ArrowLeft } from 'lucide-react'
+import { lazy, Suspense } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Badge, Button, Container, FadeIn, Section } from '../components/ui'
 import { posts } from '../data/content'
-import { NotFoundPage } from './NotFoundPage'
+
+const NotFoundPage = lazy(() =>
+  import('./NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
+)
 
 export function BlogPostPage() {
   const { slug } = useParams()
   const post = posts.find((p) => p.slug === slug)
 
   if (!post) {
-    return <NotFoundPage title="Nie znaleziono artykułu" />
+    return (
+      <Suspense
+        fallback={
+          <div className="flex min-h-[40vh] items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-400/30 border-t-violet-400" />
+          </div>
+        }
+      >
+        <NotFoundPage title="Nie znaleziono artykułu" />
+      </Suspense>
+    )
   }
 
   return (

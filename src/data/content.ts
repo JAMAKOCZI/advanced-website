@@ -1,3 +1,11 @@
+export type ProjectColor =
+  | 'from-violet-500 to-cyan-400'
+  | 'from-emerald-400 to-teal-500'
+  | 'from-amber-400 to-orange-500'
+  | 'from-fuchsia-500 to-pink-400'
+  | 'from-sky-400 to-indigo-500'
+  | 'from-rose-500 to-violet-500'
+
 export type Project = {
   id: string
   title: string
@@ -5,7 +13,7 @@ export type Project = {
   year: string
   summary: string
   metrics: string[]
-  color: string
+  color: ProjectColor
 }
 
 export type Post = {
@@ -39,6 +47,32 @@ export type Feature = {
   icon: FeatureIcon
 }
 
+export type Stat = {
+  label: string
+  value: number
+  suffix?: string
+}
+
+export type PricingPlan = {
+  name: string
+  priceMonthly: number
+  priceYearly: number
+  description: string
+  features: string[]
+  cta: string
+  highlighted: boolean
+}
+
+export type ActivityTone = 'ok' | 'warn' | 'danger'
+
+export type ActivityItem = {
+  id: number
+  user: string
+  action: string
+  time: string
+  tone: ActivityTone
+}
+
 export const navLinks = [
   { to: '/', label: 'Start' },
   { to: '/features', label: 'Funkcje' },
@@ -50,7 +84,7 @@ export const navLinks = [
   { to: '/contact', label: 'Kontakt' },
 ] as const
 
-export const stats = [
+export const stats: Stat[] = [
   { label: 'Aktywnych workspace', value: 12840 },
   { label: 'Zdarzeń / min', value: 94200 },
   { label: 'Uptime SLA', value: 99.98, suffix: '%' },
@@ -213,7 +247,7 @@ export const posts: Post[] = [
   },
 ]
 
-export const pricingPlans = [
+export const pricingPlans: PricingPlan[] = [
   {
     name: 'Starter',
     priceMonthly: 0,
@@ -326,7 +360,7 @@ export const trafficSources = [
   { name: 'Other', value: 8 },
 ]
 
-export const activityFeed = [
+export const activityFeed: ActivityItem[] = [
   { id: 1, user: 'system', action: 'Deploy v2.4.1 rolled out to eu-central', time: '2 min temu', tone: 'ok' },
   { id: 2, user: 'maja', action: 'Utworzono alert: error rate > 2%', time: '14 min temu', tone: 'warn' },
   { id: 3, user: 'igor', action: 'Zmergowano PR #482 — motion polish', time: '1 h temu', tone: 'ok' },

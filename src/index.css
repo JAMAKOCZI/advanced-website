@@ -33,6 +33,7 @@ html.dark {
   --surface-soft: rgb(255 255 255 / 0.05);
   --border-subtle: rgb(255 255 255 / 0.1);
   --input-bg: rgb(0 0 0 / 0.2);
+  --footer-bg: rgb(0 0 0 / 0.2);
   --header-scrolled: rgb(10 11 20 / 0.8);
   --header-mobile: rgb(10 11 20 / 0.95);
   --chart-tooltip-bg: #12141f;
@@ -49,6 +50,7 @@ html.light {
   --surface-soft: rgb(15 23 42 / 0.04);
   --border-subtle: rgb(15 23 42 / 0.1);
   --input-bg: rgb(255 255 255 / 0.9);
+  --footer-bg: rgb(15 23 42 / 0.04);
   --header-scrolled: rgb(248 250 252 / 0.88);
   --header-mobile: rgb(248 250 252 / 0.96);
   --chart-tooltip-bg: #ffffff;
@@ -105,9 +107,22 @@ html.light {
     font: inherit;
   }
 
-  /* Remap common dark-first utilities under light theme */
-  html.light .text-white {
+  /*
+   * Light theme remaps for dark-first utility classes.
+   * Brand surfaces keep white text via `.text-on-brand`, `[data-on-brand]`,
+   * gradient CTAs, or `.brand-mark` (overrides below win by cascade/specificity).
+   */
+  html.light :where(.text-white):not(:where(.text-on-brand, [data-on-brand], [data-on-brand] *)) {
     color: var(--fg) !important;
+  }
+  /* Keep pure white on brand gradients, logo marks, and explicit opt-in */
+  html.light .text-on-brand,
+  html.light button.bg-gradient-to-r,
+  html.light .brand-mark,
+  html.light [data-on-brand],
+  html.light [data-on-brand] .text-white,
+  html.light [class*="bg-gradient-to-"].text-white {
+    color: #fff !important;
   }
   html.light .text-slate-100,
   html.light .text-slate-200 {
@@ -136,8 +151,9 @@ html.light {
   html.light .bg-white\/10 {
     background-color: var(--surface-soft) !important;
   }
-  html.light .bg-black\/20,
-  html.light .bg-black\/30 {
+  /* Scope dark input fill remap to form controls only — footer uses --footer-bg */
+  html.light :is(input, textarea, select).bg-black\/20,
+  html.light :is(input, textarea, select).bg-black\/30 {
     background-color: var(--input-bg) !important;
   }
   html.light .hover\:bg-white\/5:hover,
@@ -179,6 +195,31 @@ html.light {
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+
+  /* Semantic color utilities (theme-aware tokens) */
+  .text-fg {
+    color: var(--fg);
+  }
+  .text-muted {
+    color: var(--fg-muted);
+  }
+  .bg-elevated {
+    background-color: var(--surface-elevated);
+  }
+  .bg-input {
+    background-color: var(--input-bg);
+  }
+  .border-subtle {
+    border-color: var(--border-subtle);
+  }
+  .bg-footer {
+    background-color: var(--footer-bg);
+  }
+
+  /* Brand surface text — always white (even in light theme) */
+  .text-on-brand {
+    color: #fff !important;
   }
 
   .glass {

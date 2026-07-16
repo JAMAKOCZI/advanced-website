@@ -1,23 +1,18 @@
 import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
+import { navLinks } from '../data/content'
 import { BackgroundEffects } from './BackgroundEffects'
 import { Footer } from './Footer'
 import { Navbar } from './Navbar'
 import { ScrollProgress } from './ScrollProgress'
 
-const titles: Record<string, string> = {
-  '/': 'Start',
-  '/features': 'Funkcje',
-  '/dashboard': 'Dashboard',
-  '/work': 'Portfolio',
-  '/blog': 'Blog',
-  '/pricing': 'Cennik',
-  '/about': 'O nas',
-  '/contact': 'Kontakt',
-}
+/** Titles derived from navLinks; dynamic routes handled below */
+const titlesFromNav: Record<string, string> = Object.fromEntries(
+  navLinks.map((l) => [l.to, l.label]),
+)
 
 function resolveTitle(pathname: string) {
-  if (titles[pathname]) return titles[pathname]
+  if (titlesFromNav[pathname]) return titlesFromNav[pathname]
   if (pathname.startsWith('/blog/')) return 'Artykuł'
   return '404'
 }

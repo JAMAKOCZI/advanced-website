@@ -40,13 +40,6 @@ export function FeaturesPage() {
                   <div>
                     <h2 className="font-display text-xl font-semibold text-white">{f.title}</h2>
                     <p className="mt-2 text-sm leading-relaxed text-slate-400">{f.description}</p>
-                    <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/5">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-400"
-                        style={{ width: `${72 + ((i * 7) % 24)}%` }}
-                      />
-                    </div>
-                    <p className="mt-2 text-xs text-slate-500">Adoption score · demo data</p>
                   </div>
                 </Card>
               </FadeIn>

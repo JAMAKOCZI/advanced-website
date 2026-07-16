@@ -1,189 +1,14 @@
-import {
-  motion,
-  useMotionValue,
-  useReducedMotion,
-  useSpring,
-  useTransform,
-} from 'framer-motion'
-import {
-  ArrowRight,
-  CheckCircle2,
-  ChevronRight,
-  Play,
-  Quote,
-  Sparkles,
-} from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { ArrowRight, CheckCircle2, ChevronRight, Play, Quote } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { FaqAccordion } from '../components/home/FaqAccordion'
+import { AnimatedStat } from '../components/home/AnimatedStat'
+import { HeroVisual } from '../components/home/HeroVisual'
+import { ProjectCard } from '../components/ProjectCard'
 import { Badge, Button, Card, Container, FadeIn, Section } from '../components/ui'
-import { faq, features, projects, stats } from '../data/content'
-import { formatNumber } from '../lib/utils'
-
-function AnimatedStat({
-  value,
-  label,
-  suffix = '',
-}: {
-  value: number
-  label: string
-  suffix?: string
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [display, setDisplay] = useState(0)
-  const [started, setStarted] = useState(false)
-  const reduceMotion = useReducedMotion()
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          setStarted(true)
-          obs.disconnect()
-        }
-      },
-      { threshold: 0.35 },
-    )
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [])
-
-  useEffect(() => {
-    if (!started) return
-    if (reduceMotion) {
-      setDisplay(value)
-      return
-    }
-
-    const duration = 1400
-    const start = performance.now()
-    let frame = 0
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / duration)
-      const eased = 1 - Math.pow(1 - t, 3)
-      setDisplay(value * eased)
-      if (t < 1) frame = requestAnimationFrame(tick)
-    }
-    frame = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frame)
-  }, [value, started, reduceMotion])
-
-  const formatted =
-    suffix === '%' ? display.toFixed(2) : formatNumber(Math.round(display))
-
-  return (
-    <div ref={ref} className="text-center">
-      <p className="font-display text-3xl font-bold text-white sm:text-4xl">
-        {formatted}
-        {suffix}
-      </p>
-      <p className="mt-1 text-sm text-slate-400">{label}</p>
-    </div>
-  )
-}
-
-function HeroVisual() {
-  const ref = useRef<HTMLDivElement>(null)
-  const reduceMotion = useReducedMotion()
-  const mx = useMotionValue(0)
-  const my = useMotionValue(0)
-  const sx = useSpring(mx, { stiffness: 80, damping: 20 })
-  const sy = useSpring(my, { stiffness: 80, damping: 20 })
-  const rotateX = useTransform(sy, [-0.5, 0.5], [8, -8])
-  const rotateY = useTransform(sx, [-0.5, 0.5], [-10, 10])
-
-  return (
-    <motion.div
-      ref={ref}
-      style={
-        reduceMotion
-          ? undefined
-          : { rotateX, rotateY, transformPerspective: 1000 }
-      }
-      onMouseMove={(e) => {
-        if (reduceMotion) return
-        const rect = ref.current?.getBoundingClientRect()
-        if (!rect) return
-        mx.set((e.clientX - rect.left) / rect.width - 0.5)
-        my.set((e.clientY - rect.top) / rect.height - 0.5)
-      }}
-      onMouseLeave={() => {
-        mx.set(0)
-        my.set(0)
-      }}
-      className="relative"
-    >
-      <div className="glass relative overflow-hidden rounded-3xl border border-white/10 p-1 shadow-[var(--shadow-glow)]">
-        <div className="rounded-[1.35rem] bg-gradient-to-br from-[#12141f] via-[#161825] to-[#0d1b2a] p-5 sm:p-6">
-          <div className="mb-5 flex items-center justify-between">
-            <div className="flex gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80" />
-              <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
-            </div>
-            <Badge className="!py-0.5 !text-slate-200">live · eu-central</Badge>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            {[
-              { label: 'Latency p95', value: '118 ms', delta: '-12%' },
-              { label: 'Active users', value: '7.1k', delta: '+8%' },
-              { label: 'Error rate', value: '0.14%', delta: '-0.03' },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="rounded-2xl border border-white/10 bg-white/5 p-4"
-              >
-                <p className="text-xs !text-slate-400">{item.label}</p>
-                <p className="mt-1 font-display text-xl font-semibold !text-white">
-                  {item.value}
-                </p>
-                <p className="mt-1 text-xs text-emerald-400">{item.delta}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-4 grid gap-4 sm:grid-cols-5">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:col-span-3">
-              <p className="mb-3 text-xs !text-slate-400">Throughput</p>
-              <div className="flex h-28 items-end gap-1.5">
-                {[40, 55, 48, 70, 62, 85, 78, 92, 88, 96, 90, 100].map((h, i) => (
-                  <motion.div
-                    key={i}
-                    initial={reduceMotion ? false : { height: 0 }}
-                    animate={{ height: `${h}%` }}
-                    transition={
-                      reduceMotion
-                        ? { duration: 0 }
-                        : { delay: 0.2 + i * 0.05, duration: 0.6 }
-                    }
-                    className="flex-1 rounded-t-md bg-gradient-to-t from-violet-600/40 to-cyan-400"
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:col-span-2">
-              <p className="mb-3 text-xs !text-slate-400">AI insight</p>
-              <div className="flex items-start gap-2">
-                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-violet-300" />
-                <p className="text-sm leading-relaxed !text-slate-300">
-                  Spike w checkout koreluje z kampanią Paid PL. Sugeruję alert na funnel drop &gt;
-                  8%.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  )
-}
+import { features, projects, stats } from '../data/content'
+import { featureIcons } from '../lib/featureIcons'
 
 export function HomePage() {
-  const [openFaq, setOpenFaq] = useState<number | null>(0)
-
   return (
     <>
       <Section className="overflow-hidden pb-10 pt-10 sm:pt-16">
@@ -248,13 +73,13 @@ export function HomePage() {
 
       <Section className="py-10">
         <Container>
-          <div className="glass grid grid-cols-2 gap-6 rounded-3xl p-6 sm:grid-cols-4 sm:p-8">
+          <div className="glass grid grid-cols-2 gap-6 rounded-3xl p-5 sm:grid-cols-4 sm:gap-6 sm:p-8">
             {stats.map((s) => (
               <AnimatedStat
                 key={s.label}
                 value={s.value}
                 label={s.label}
-                suffix={'suffix' in s ? s.suffix : ''}
+                suffix={s.suffix ?? ''}
               />
             ))}
           </div>
@@ -284,17 +109,20 @@ export function HomePage() {
             </div>
           </FadeIn>
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {features.slice(0, 6).map((f, i) => (
-              <FadeIn key={f.title} delay={i * 0.05}>
-                <Card className="h-full">
-                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/30 to-cyan-400/20 text-violet-200">
-                    <Sparkles className="h-5 w-5" />
-                  </div>
-                  <h3 className="font-display text-lg font-semibold text-white">{f.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-400">{f.description}</p>
-                </Card>
-              </FadeIn>
-            ))}
+            {features.map((f, i) => {
+              const Icon = featureIcons[f.icon]
+              return (
+                <FadeIn key={f.title} delay={i * 0.05}>
+                  <Card className="h-full">
+                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/30 to-cyan-400/20 text-violet-200">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="font-display text-lg font-semibold text-white">{f.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-400">{f.description}</p>
+                  </Card>
+                </FadeIn>
+              )
+            })}
           </div>
         </Container>
       </Section>
@@ -312,22 +140,7 @@ export function HomePage() {
           <div className="grid gap-5 md:grid-cols-3">
             {projects.slice(0, 3).map((p, i) => (
               <FadeIn key={p.id} delay={i * 0.06}>
-                <Link to="/work" className="block h-full">
-                  <Card className="group h-full overflow-hidden p-0">
-                    <div
-                      className={`h-28 bg-gradient-to-br ${p.color} opacity-80 transition group-hover:opacity-100`}
-                    />
-                    <div className="p-6">
-                      <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
-                        {p.category} · {p.year}
-                      </p>
-                      <h3 className="mt-2 font-display text-xl font-semibold text-white">
-                        {p.title}
-                      </h3>
-                      <p className="mt-2 text-sm text-slate-400">{p.summary}</p>
-                    </div>
-                  </Card>
-                </Link>
+                <ProjectCard project={p} variant="teaser" to="/work" />
               </FadeIn>
             ))}
           </div>
@@ -348,42 +161,7 @@ export function HomePage() {
               </Card>
             </FadeIn>
             <FadeIn delay={0.08}>
-              <div className="space-y-3">
-                {faq.slice(0, 3).map((item, i) => {
-                  const open = openFaq === i
-                  const panelId = `faq-panel-${i}`
-                  const buttonId = `faq-button-${i}`
-                  return (
-                    <div key={item.q} className="glass rounded-2xl transition hover:border-violet-400/30">
-                      <button
-                        id={buttonId}
-                        type="button"
-                        onClick={() => setOpenFaq(open ? null : i)}
-                        className="w-full p-5 text-left"
-                        aria-expanded={open}
-                        aria-controls={panelId}
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <p className="font-semibold text-white">{item.q}</p>
-                          <span className="text-slate-400" aria-hidden>
-                            {open ? '−' : '+'}
-                          </span>
-                        </div>
-                      </button>
-                      {open ? (
-                        <p
-                          id={panelId}
-                          role="region"
-                          aria-labelledby={buttonId}
-                          className="px-5 pb-5 text-sm leading-relaxed text-slate-400"
-                        >
-                          {item.a}
-                        </p>
-                      ) : null}
-                    </div>
-                  )
-                })}
-              </div>
+              <FaqAccordion limit={3} />
             </FadeIn>
           </div>
         </Container>
