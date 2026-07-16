@@ -1,5 +1,14 @@
-import { motion } from 'framer-motion'
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  type ButtonHTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactElement,
+  type ReactNode,
+  type TextareaHTMLAttributes,
+} from 'react'
 import { cn } from '../lib/utils'
 
 export function Container({
@@ -67,41 +76,59 @@ export function Card({
   )
 }
 
+const buttonVariants = {
+  primary:
+    'bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-400 text-white shadow-[var(--shadow-glow)] hover:brightness-110',
+  secondary:
+    'border border-white/15 bg-white/5 text-slate-100 hover:bg-white/10 hover:border-white/25',
+  ghost: 'text-slate-200 hover:bg-white/5',
+} as const
+
+const buttonSizes = {
+  sm: 'h-9 px-3 text-sm',
+  md: 'h-11 px-5 text-sm',
+  lg: 'h-12 px-6 text-base',
+} as const
+
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary' | 'ghost'
-  size?: 'sm' | 'md' | 'lg'
+  variant?: keyof typeof buttonVariants
+  size?: keyof typeof buttonSizes
+  asChild?: boolean
+}
+
+function buttonClassName(
+  variant: keyof typeof buttonVariants,
+  size: keyof typeof buttonSizes,
+  className?: string,
+) {
+  return cn(
+    'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 disabled:cursor-not-allowed disabled:opacity-50',
+    buttonVariants[variant],
+    buttonSizes[size],
+    className,
+  )
 }
 
 export function Button({
   className,
   variant = 'primary',
   size = 'md',
+  asChild = false,
   children,
   ...props
 }: ButtonProps) {
-  const variants = {
-    primary:
-      'bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-400 text-white shadow-[var(--shadow-glow)] hover:brightness-110',
-    secondary:
-      'border border-white/15 bg-white/5 text-slate-100 hover:bg-white/10 hover:border-white/25',
-    ghost: 'text-slate-200 hover:bg-white/5',
-  }
-  const sizes = {
-    sm: 'h-9 px-3 text-sm',
-    md: 'h-11 px-5 text-sm',
-    lg: 'h-12 px-6 text-base',
+  const classes = buttonClassName(variant, size, className)
+
+  if (asChild && isValidElement(children)) {
+    const child = Children.only(children) as ReactElement<{ className?: string }>
+    return cloneElement(child, {
+      className: cn(classes, child.props.className),
+      ...props,
+    } as never)
   }
 
   return (
-    <button
-      className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 disabled:cursor-not-allowed disabled:opacity-50',
-        variants[variant],
-        sizes[size],
-        className,
-      )}
-      {...props}
-    >
+    <button className={classes} {...props}>
       {children}
     </button>
   )
@@ -140,11 +167,13 @@ export function PageHeader({
   title: string
   description?: string
 }) {
+  const reduceMotion = useReducedMotion()
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45 }}
+      transition={{ duration: reduceMotion ? 0 : 0.45 }}
       className="mb-12 max-w-3xl"
     >
       {eyebrow ? <Badge className="mb-4">{eyebrow}</Badge> : null}
@@ -167,6 +196,12 @@ export function FadeIn({
   delay?: number
   className?: string
 }) {
+  const reduceMotion = useReducedMotion()
+
+  if (reduceMotion) {
+    return <div className={className}>{children}</div>
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

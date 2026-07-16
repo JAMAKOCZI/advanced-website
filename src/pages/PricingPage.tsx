@@ -1,9 +1,9 @@
 import { Check } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Badge, Button, Card, Container, FadeIn, PageHeader, Section } from '../components/ui'
 import { pricingPlans } from '../data/content'
 import { cn, formatCurrency } from '../lib/utils'
-import { Badge, Button, Card, Container, FadeIn, PageHeader, Section } from '../components/ui'
 
 export function PricingPage() {
   const [yearly, setYearly] = useState(true)
@@ -25,6 +25,7 @@ export function PricingPage() {
             type="button"
             role="switch"
             aria-checked={yearly}
+            aria-label="Rozliczenie roczne"
             onClick={() => setYearly((v) => !v)}
             className={cn(
               'relative h-8 w-14 rounded-full border transition',
@@ -78,14 +79,13 @@ export function PricingPage() {
                       </li>
                     ))}
                   </ul>
-                  <Link to="/contact" className="mt-8 block">
-                    <Button
-                      className="w-full"
-                      variant={plan.highlighted ? 'primary' : 'secondary'}
-                    >
-                      {plan.cta}
-                    </Button>
-                  </Link>
+                  <Button
+                    asChild
+                    className="mt-8 w-full"
+                    variant={plan.highlighted ? 'primary' : 'secondary'}
+                  >
+                    <Link to="/contact">{plan.cta}</Link>
+                  </Button>
                 </Card>
               </FadeIn>
             )

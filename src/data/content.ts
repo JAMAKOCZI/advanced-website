@@ -25,6 +25,20 @@ export type TeamMember = {
   initials: string
 }
 
+export type FeatureIcon =
+  | 'Activity'
+  | 'Sparkles'
+  | 'Layers'
+  | 'Globe2'
+  | 'Shield'
+  | 'Terminal'
+
+export type Feature = {
+  title: string
+  description: string
+  icon: FeatureIcon
+}
+
 export const navLinks = [
   { to: '/', label: 'Start' },
   { to: '/features', label: 'Funkcje' },
@@ -43,7 +57,7 @@ export const stats = [
   { label: 'Krajów', value: 42 },
 ]
 
-export const features = [
+export const features: Feature[] = [
   {
     title: 'Realtime observability',
     description:

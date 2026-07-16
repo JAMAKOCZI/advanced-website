@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
+import { Badge, Card, Container, FadeIn, PageHeader, Section } from '../components/ui'
 import { projects, type Project } from '../data/content'
 import { cn } from '../lib/utils'
-import { Badge, Card, Container, FadeIn, PageHeader, Section } from '../components/ui'
 
 const categories = ['All', 'Product', 'Brand', 'Platform', 'AI'] as const
 
@@ -32,12 +32,13 @@ export function WorkPage() {
         />
 
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Filtr kategorii">
             {categories.map((c) => (
               <button
                 key={c}
                 type="button"
                 onClick={() => setFilter(c)}
+                aria-pressed={filter === c}
                 className={cn(
                   'rounded-full border px-4 py-2 text-sm font-medium transition',
                   filter === c
@@ -49,15 +50,19 @@ export function WorkPage() {
               </button>
             ))}
           </div>
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Szukaj projektu…"
-            className="h-11 w-full rounded-xl border border-white/10 bg-black/20 px-4 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-violet-400/60 sm:max-w-xs"
-          />
+          <label className="block w-full sm:max-w-xs">
+            <span className="sr-only">Szukaj projektu</span>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Szukaj projektu…"
+              aria-label="Szukaj projektu"
+              className="h-11 w-full rounded-xl border border-white/10 bg-black/20 px-4 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-violet-400/60"
+            />
+          </label>
         </div>
 
-        <p className="mb-4 text-sm text-slate-500">
+        <p className="mb-4 text-sm text-slate-500" aria-live="polite">
           Wyniki: {filtered.length} / {projects.length}
         </p>
 
@@ -85,7 +90,7 @@ function ProjectCard({ project }: { project: Project }) {
       <div className={`relative h-36 bg-gradient-to-br ${project.color}`}>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.25),transparent_45%)]" />
         <div className="absolute bottom-3 left-3">
-          <Badge className="!bg-black/30">{project.category}</Badge>
+          <Badge className="!bg-black/30 !text-white">{project.category}</Badge>
         </div>
       </div>
       <div className="p-6">

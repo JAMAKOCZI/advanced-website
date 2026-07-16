@@ -1,4 +1,10 @@
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import {
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+  useTransform,
+} from 'framer-motion'
 import {
   ArrowRight,
   CheckCircle2,
@@ -9,9 +15,9 @@ import {
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Badge, Button, Card, Container, FadeIn, Section } from '../components/ui'
 import { faq, features, projects, stats } from '../data/content'
 import { formatNumber } from '../lib/utils'
-import { Badge, Button, Card, Container, FadeIn, Section } from '../components/ui'
 
 function AnimatedStat({
   value,
@@ -22,9 +28,35 @@ function AnimatedStat({
   label: string
   suffix?: string
 }) {
+  const ref = useRef<HTMLDivElement>(null)
   const [display, setDisplay] = useState(0)
+  const [started, setStarted] = useState(false)
+  const reduceMotion = useReducedMotion()
 
   useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setStarted(true)
+          obs.disconnect()
+        }
+      },
+      { threshold: 0.35 },
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!started) return
+    if (reduceMotion) {
+      setDisplay(value)
+      return
+    }
+
     const duration = 1400
     const start = performance.now()
     let frame = 0
@@ -36,15 +68,13 @@ function AnimatedStat({
     }
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
-  }, [value])
+  }, [value, started, reduceMotion])
 
   const formatted =
-    suffix === '%'
-      ? display.toFixed(2)
-      : formatNumber(Math.round(display))
+    suffix === '%' ? display.toFixed(2) : formatNumber(Math.round(display))
 
   return (
-    <div className="text-center">
+    <div ref={ref} className="text-center">
       <p className="font-display text-3xl font-bold text-white sm:text-4xl">
         {formatted}
         {suffix}
@@ -56,6 +86,7 @@ function AnimatedStat({
 
 function HeroVisual() {
   const ref = useRef<HTMLDivElement>(null)
+  const reduceMotion = useReducedMotion()
   const mx = useMotionValue(0)
   const my = useMotionValue(0)
   const sx = useSpring(mx, { stiffness: 80, damping: 20 })
@@ -66,8 +97,13 @@ function HeroVisual() {
   return (
     <motion.div
       ref={ref}
-      style={{ rotateX, rotateY, transformPerspective: 1000 }}
+      style={
+        reduceMotion
+          ? undefined
+          : { rotateX, rotateY, transformPerspective: 1000 }
+      }
       onMouseMove={(e) => {
+        if (reduceMotion) return
         const rect = ref.current?.getBoundingClientRect()
         if (!rect) return
         mx.set((e.clientX - rect.left) / rect.width - 0.5)
@@ -87,7 +123,7 @@ function HeroVisual() {
               <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
             </div>
-            <Badge className="!py-0.5">live · eu-central</Badge>
+            <Badge className="!py-0.5 !text-slate-200">live · eu-central</Badge>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
@@ -96,35 +132,45 @@ function HeroVisual() {
               { label: 'Active users', value: '7.1k', delta: '+8%' },
               { label: 'Error rate', value: '0.14%', delta: '-0.03' },
             ].map((item) => (
-              <div key={item.label} className="rounded-2xl border border-white/8 bg-white/5 p-4">
-                <p className="text-xs text-slate-400">{item.label}</p>
-                <p className="mt-1 font-display text-xl font-semibold text-white">{item.value}</p>
+              <div
+                key={item.label}
+                className="rounded-2xl border border-white/10 bg-white/5 p-4"
+              >
+                <p className="text-xs !text-slate-400">{item.label}</p>
+                <p className="mt-1 font-display text-xl font-semibold !text-white">
+                  {item.value}
+                </p>
                 <p className="mt-1 text-xs text-emerald-400">{item.delta}</p>
               </div>
             ))}
           </div>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-5">
-            <div className="rounded-2xl border border-white/8 bg-white/5 p-4 sm:col-span-3">
-              <p className="mb-3 text-xs text-slate-400">Throughput</p>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:col-span-3">
+              <p className="mb-3 text-xs !text-slate-400">Throughput</p>
               <div className="flex h-28 items-end gap-1.5">
                 {[40, 55, 48, 70, 62, 85, 78, 92, 88, 96, 90, 100].map((h, i) => (
                   <motion.div
                     key={i}
-                    initial={{ height: 0 }}
+                    initial={reduceMotion ? false : { height: 0 }}
                     animate={{ height: `${h}%` }}
-                    transition={{ delay: 0.2 + i * 0.05, duration: 0.6 }}
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : { delay: 0.2 + i * 0.05, duration: 0.6 }
+                    }
                     className="flex-1 rounded-t-md bg-gradient-to-t from-violet-600/40 to-cyan-400"
                   />
                 ))}
               </div>
             </div>
-            <div className="rounded-2xl border border-white/8 bg-white/5 p-4 sm:col-span-2">
-              <p className="mb-3 text-xs text-slate-400">AI insight</p>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:col-span-2">
+              <p className="mb-3 text-xs !text-slate-400">AI insight</p>
               <div className="flex items-start gap-2">
                 <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-violet-300" />
-                <p className="text-sm leading-relaxed text-slate-300">
-                  Spike w checkout koreluje z kampanią Paid PL. Sugeruję alert na funnel drop &gt; 8%.
+                <p className="text-sm leading-relaxed !text-slate-300">
+                  Spike w checkout koreluje z kampanią Paid PL. Sugeruję alert na funnel drop &gt;
+                  8%.
                 </p>
               </div>
             </div>
@@ -158,22 +204,23 @@ export function HomePage() {
               </FadeIn>
               <FadeIn delay={0.1}>
                 <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-400">
-                  Aether to multi-page product experience: animacje, dashboard z wykresami, portfolio
-                  z filtrami, blog, cennik i formularz kontaktowy — w jednym spójnym design systemie.
+                  Aether to multi-page product experience: animacje, dashboard z wykresami,
+                  portfolio z filtrami, blog, cennik i formularz kontaktowy — w jednym spójnym
+                  design systemie.
                 </p>
               </FadeIn>
               <FadeIn delay={0.15}>
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <Link to="/dashboard">
-                    <Button size="lg">
+                  <Button asChild size="lg">
+                    <Link to="/dashboard">
                       Otwórz dashboard <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Link to="/features">
-                    <Button size="lg" variant="secondary">
+                    </Link>
+                  </Button>
+                  <Button asChild size="lg" variant="secondary">
+                    <Link to="/features">
                       <Play className="h-4 w-4" /> Zobacz funkcje
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </div>
               </FadeIn>
               <FadeIn delay={0.2}>
@@ -224,11 +271,14 @@ export function HomePage() {
                   Warstwy złożoności, nie chaos
                 </h2>
                 <p className="mt-3 max-w-2xl text-slate-400">
-                  Każda sekcja tej strony pokazuje inny pattern UI: navigation, data viz, filtering,
-                  content, commerce, forms.
+                  Każda sekcja tej strony pokazuje inny pattern UI: navigation, data viz,
+                  filtering, content, commerce, forms.
                 </p>
               </div>
-              <Link to="/features" className="text-sm font-semibold text-violet-300 hover:text-violet-200">
+              <Link
+                to="/features"
+                className="text-sm font-semibold text-violet-300 hover:text-violet-200"
+              >
                 Wszystkie funkcje <ChevronRight className="inline h-4 w-4" />
               </Link>
             </div>
@@ -262,14 +312,18 @@ export function HomePage() {
           <div className="grid gap-5 md:grid-cols-3">
             {projects.slice(0, 3).map((p, i) => (
               <FadeIn key={p.id} delay={i * 0.06}>
-                <Link to="/work">
+                <Link to="/work" className="block h-full">
                   <Card className="group h-full overflow-hidden p-0">
-                    <div className={`h-28 bg-gradient-to-br ${p.color} opacity-80 transition group-hover:opacity-100`} />
+                    <div
+                      className={`h-28 bg-gradient-to-br ${p.color} opacity-80 transition group-hover:opacity-100`}
+                    />
                     <div className="p-6">
                       <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
                         {p.category} · {p.year}
                       </p>
-                      <h3 className="mt-2 font-display text-xl font-semibold text-white">{p.title}</h3>
+                      <h3 className="mt-2 font-display text-xl font-semibold text-white">
+                        {p.title}
+                      </h3>
                       <p className="mt-2 text-sm text-slate-400">{p.summary}</p>
                     </div>
                   </Card>
@@ -297,21 +351,36 @@ export function HomePage() {
               <div className="space-y-3">
                 {faq.slice(0, 3).map((item, i) => {
                   const open = openFaq === i
+                  const panelId = `faq-panel-${i}`
+                  const buttonId = `faq-button-${i}`
                   return (
-                    <button
-                      key={item.q}
-                      type="button"
-                      onClick={() => setOpenFaq(open ? null : i)}
-                      className="glass w-full rounded-2xl p-5 text-left transition hover:border-violet-400/30"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <p className="font-semibold text-white">{item.q}</p>
-                        <span className="text-slate-400">{open ? '−' : '+'}</span>
-                      </div>
+                    <div key={item.q} className="glass rounded-2xl transition hover:border-violet-400/30">
+                      <button
+                        id={buttonId}
+                        type="button"
+                        onClick={() => setOpenFaq(open ? null : i)}
+                        className="w-full p-5 text-left"
+                        aria-expanded={open}
+                        aria-controls={panelId}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <p className="font-semibold text-white">{item.q}</p>
+                          <span className="text-slate-400" aria-hidden>
+                            {open ? '−' : '+'}
+                          </span>
+                        </div>
+                      </button>
                       {open ? (
-                        <p className="mt-3 text-sm leading-relaxed text-slate-400">{item.a}</p>
+                        <p
+                          id={panelId}
+                          role="region"
+                          aria-labelledby={buttonId}
+                          className="px-5 pb-5 text-sm leading-relaxed text-slate-400"
+                        >
+                          {item.a}
+                        </p>
                       ) : null}
-                    </button>
+                    </div>
                   )
                 })}
               </div>
@@ -333,14 +402,12 @@ export function HomePage() {
                   sufitem.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <Link to="/contact">
-                    <Button size="lg">Napisz do nas</Button>
-                  </Link>
-                  <Link to="/pricing">
-                    <Button size="lg" variant="secondary">
-                      Zobacz cennik
-                    </Button>
-                  </Link>
+                  <Button asChild size="lg">
+                    <Link to="/contact">Napisz do nas</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="secondary">
+                    <Link to="/pricing">Zobacz cennik</Link>
+                  </Button>
                 </div>
               </div>
             </div>

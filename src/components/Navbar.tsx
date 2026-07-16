@@ -1,5 +1,5 @@
 import { Menu, Moon, Sun, X, Zap } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { navLinks } from '../data/content'
 import { useTheme } from '../hooks/useTheme'
@@ -10,6 +10,9 @@ export function Navbar() {
   const { theme, toggle } = useTheme()
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const menuId = useId()
+  const toggleRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12)
@@ -25,12 +28,31 @@ export function Navbar() {
     }
   }, [open])
 
+  useEffect(() => {
+    if (!open) return
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false)
+        toggleRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+
+    const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled])',
+    )
+    focusable?.[0]?.focus()
+
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open])
+
   return (
     <header
       className={cn(
         'sticky top-0 z-50 border-b transition duration-300',
         scrolled
-          ? 'border-white/10 bg-[#0a0b14]/80 backdrop-blur-xl'
+          ? 'surface-header-scrolled border-white/10 backdrop-blur-xl'
           : 'border-transparent bg-transparent',
       )}
     >
@@ -44,7 +66,7 @@ export function Navbar() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex">
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Główne">
           {navLinks.map((link) => (
             <NavLink
               key={link.to}
@@ -71,14 +93,17 @@ export function Navbar() {
           >
             {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
-          <Link to="/contact" className="hidden sm:block">
-            <Button size="sm">Umów demo</Button>
-          </Link>
+          <Button asChild size="sm" className="hidden sm:inline-flex">
+            <Link to="/contact">Umów demo</Link>
+          </Button>
           <button
+            ref={toggleRef}
             type="button"
             className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-200 lg:hidden"
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? 'Zamknij menu' : 'Otwórz menu'}
+            aria-expanded={open}
+            aria-controls={menuId}
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -86,7 +111,11 @@ export function Navbar() {
       </Container>
 
       {open ? (
-        <div className="border-t border-white/10 bg-[#0a0b14]/95 backdrop-blur-xl lg:hidden">
+        <div
+          id={menuId}
+          ref={panelRef}
+          className="surface-header-mobile border-t border-white/10 backdrop-blur-xl lg:hidden"
+        >
           <Container className="flex flex-col gap-1 py-4">
             {navLinks.map((link) => (
               <NavLink
@@ -104,9 +133,11 @@ export function Navbar() {
                 {link.label}
               </NavLink>
             ))}
-            <Link to="/contact" onClick={() => setOpen(false)} className="mt-2">
-              <Button className="w-full">Umów demo</Button>
-            </Link>
+            <Button asChild className="mt-2 w-full">
+              <Link to="/contact" onClick={() => setOpen(false)}>
+                Umów demo
+              </Link>
+            </Button>
           </Container>
         </div>
       ) : null}

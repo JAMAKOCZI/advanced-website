@@ -6,17 +6,17 @@ import {
   Sparkles,
   Terminal,
 } from 'lucide-react'
-import { features } from '../data/content'
 import { Card, Container, FadeIn, PageHeader, Section } from '../components/ui'
+import { features, type FeatureIcon } from '../data/content'
 
-const icons = {
+const icons: Record<FeatureIcon, typeof Activity> = {
   Activity,
   Sparkles,
   Layers,
   Globe2,
   Shield,
   Terminal,
-} as const
+}
 
 export function FeaturesPage() {
   return (
@@ -30,7 +30,7 @@ export function FeaturesPage() {
 
         <div className="grid gap-5 md:grid-cols-2">
           {features.map((f, i) => {
-            const Icon = icons[f.icon as keyof typeof icons] ?? Sparkles
+            const Icon = icons[f.icon]
             return (
               <FadeIn key={f.title} delay={i * 0.04}>
                 <Card className="flex h-full gap-4">

@@ -5,6 +5,7 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  Legend,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -12,9 +13,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { Badge, Card, Container, FadeIn, PageHeader, Section } from '../components/ui'
 import { activityFeed, dashboardSeries, trafficSources } from '../data/content'
 import { cn, formatNumber } from '../lib/utils'
-import { Badge, Card, Container, FadeIn, PageHeader, Section } from '../components/ui'
 
 const COLORS = ['#7c5cff', '#22d3ee', '#34d399', '#fbbf24', '#f472b6']
 
@@ -24,6 +25,13 @@ const kpi = [
   { label: 'Churn', value: '2.1%', delta: '-0.4%', up: true },
   { label: 'p95 latency', value: '142 ms', delta: '+8 ms', up: false },
 ]
+
+const tooltipStyle = {
+  background: 'var(--chart-tooltip-bg)',
+  border: '1px solid var(--chart-tooltip-border)',
+  borderRadius: 12,
+  color: 'var(--fg)',
+}
 
 export function DashboardPage() {
   return (
@@ -64,8 +72,12 @@ export function DashboardPage() {
             <Card hover={false} className="h-full">
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <h2 className="font-display text-lg font-semibold text-white">Users & revenue</h2>
-                  <p className="text-sm text-slate-400">Dual series · daily aggregation</p>
+                  <h2 className="font-display text-lg font-semibold text-white">
+                    Users & revenue
+                  </h2>
+                  <p className="text-sm text-slate-400">
+                    Dual series · osobne osie Y · daily aggregation
+                  </p>
                 </div>
               </div>
               <div className="h-72 w-full">
@@ -81,26 +93,43 @@ export function DashboardPage() {
                         <stop offset="100%" stopColor="#22d3ee" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
+                    <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
                     <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} />
-                    <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-                    <Tooltip
-                      contentStyle={{
-                        background: '#12141f',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: 12,
-                      }}
+                    <YAxis
+                      yAxisId="users"
+                      stroke="#a78bfa"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(v) => `${Math.round(v / 1000)}k`}
+                      width={42}
                     />
+                    <YAxis
+                      yAxisId="revenue"
+                      orientation="right"
+                      stroke="#22d3ee"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(v) => `${v}k`}
+                      width={40}
+                    />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend />
                     <Area
+                      yAxisId="users"
                       type="monotone"
                       dataKey="users"
+                      name="Users"
                       stroke="#a78bfa"
                       fill="url(#users)"
                       strokeWidth={2}
                     />
                     <Area
+                      yAxisId="revenue"
                       type="monotone"
                       dataKey="revenue"
+                      name="Revenue (k PLN)"
                       stroke="#22d3ee"
                       fill="url(#revenue)"
                       strokeWidth={2}
@@ -130,13 +159,7 @@ export function DashboardPage() {
                         <Cell key={i} fill={COLORS[i % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        background: '#12141f',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: 12,
-                      }}
-                    />
+                    <Tooltip contentStyle={tooltipStyle} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -165,17 +188,11 @@ export function DashboardPage() {
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={dashboardSeries}>
-                    <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
+                    <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
                     <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} />
                     <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-                    <Tooltip
-                      contentStyle={{
-                        background: '#12141f',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: 12,
-                      }}
-                    />
-                    <Bar dataKey="errors" fill="#f43f5e" radius={[8, 8, 0, 0]} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Bar dataKey="errors" name="Errors" fill="#f43f5e" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

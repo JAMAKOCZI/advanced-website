@@ -1,6 +1,24 @@
 import { CheckCircle2, Send } from 'lucide-react'
-import { type FormEvent, type ReactNode, useState } from 'react'
-import { Button, Card, Container, FadeIn, Input, PageHeader, Section, Textarea } from '../components/ui'
+import {
+  cloneElement,
+  isValidElement,
+  useId,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactElement,
+  type ReactNode,
+} from 'react'
+import {
+  Button,
+  Card,
+  Container,
+  FadeIn,
+  Input,
+  PageHeader,
+  Section,
+  Textarea,
+} from '../components/ui'
 
 type FormState = {
   name: string
@@ -23,6 +41,7 @@ export function ContactPage() {
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
 
   function validate(values: FormState) {
     const next: Partial<Record<keyof FormState, string>> = {}
@@ -36,7 +55,12 @@ export function ContactPage() {
     e.preventDefault()
     const next = validate(form)
     setErrors(next)
-    if (Object.keys(next).length) return
+    if (Object.keys(next).length) {
+      const first = Object.keys(next)[0]
+      const el = formRef.current?.querySelector<HTMLElement>(`[name="${first}"]`)
+      el?.focus()
+      return
+    }
 
     setLoading(true)
     await new Promise((r) => setTimeout(r, 900))
@@ -58,7 +82,7 @@ export function ContactPage() {
           <FadeIn className="lg:col-span-3">
             <Card hover={false}>
               {sent ? (
-                <div className="flex flex-col items-start gap-3 py-8">
+                <div className="flex flex-col items-start gap-3 py-8" role="status">
                   <CheckCircle2 className="h-10 w-10 text-emerald-400" />
                   <h2 className="font-display text-2xl font-semibold text-white">
                     Wiadomość przyjęta (demo)
@@ -72,10 +96,11 @@ export function ContactPage() {
                   </Button>
                 </div>
               ) : (
-                <form onSubmit={onSubmit} className="space-y-4" noValidate>
+                <form ref={formRef} onSubmit={onSubmit} className="space-y-4" noValidate>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Field label="Imię i nazwisko" error={errors.name}>
                       <Input
+                        name="name"
                         value={form.name}
                         onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                         placeholder="Anna Kowalska"
@@ -84,6 +109,7 @@ export function ContactPage() {
                     </Field>
                     <Field label="E-mail" error={errors.email}>
                       <Input
+                        name="email"
                         type="email"
                         value={form.email}
                         onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
@@ -95,6 +121,7 @@ export function ContactPage() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Field label="Firma (opcjonalnie)">
                       <Input
+                        name="company"
                         value={form.company}
                         onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))}
                         placeholder="Acme Sp. z o.o."
@@ -102,6 +129,7 @@ export function ContactPage() {
                     </Field>
                     <Field label="Budżet">
                       <select
+                        name="budget"
                         value={form.budget}
                         onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))}
                         className="h-11 w-full rounded-xl border border-white/10 bg-black/20 px-4 text-slate-100 outline-none focus:border-violet-400/60"
@@ -116,6 +144,7 @@ export function ContactPage() {
                   </div>
                   <Field label="Wiadomość" error={errors.message}>
                     <Textarea
+                      name="message"
                       value={form.message}
                       onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
                       placeholder="Opisz cele, timeline i stack…"
@@ -171,11 +200,28 @@ function Field({
   error?: string
   children: ReactNode
 }) {
+  const id = useId()
+  const errorId = `${id}-error`
+
+  const control = isValidElement(children)
+    ? cloneElement(children as ReactElement<Record<string, unknown>>, {
+        id,
+        'aria-invalid': error ? true : undefined,
+        'aria-describedby': error ? errorId : undefined,
+      })
+    : children
+
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-sm font-medium text-slate-300">{label}</span>
-      {children}
-      {error ? <span className="mt-1 block text-xs text-rose-400">{error}</span> : null}
-    </label>
+    <div className="block">
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-slate-300">
+        {label}
+      </label>
+      {control}
+      {error ? (
+        <span id={errorId} className="mt-1 block text-xs text-rose-400" role="alert">
+          {error}
+        </span>
+      ) : null}
+    </div>
   )
 }

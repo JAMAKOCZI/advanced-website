@@ -1,26 +1,15 @@
 import { ArrowLeft } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
-import { posts } from '../data/content'
 import { Badge, Button, Container, FadeIn, Section } from '../components/ui'
+import { posts } from '../data/content'
+import { NotFoundPage } from './NotFoundPage'
 
 export function BlogPostPage() {
   const { slug } = useParams()
   const post = posts.find((p) => p.slug === slug)
 
   if (!post) {
-    return (
-      <Section>
-        <Container>
-          <h1 className="font-display text-3xl font-bold text-white">Nie znaleziono artykułu</h1>
-          <p className="mt-3 text-slate-400">Ten slug nie istnieje w demo content.</p>
-          <Link to="/blog" className="mt-6 inline-block">
-            <Button variant="secondary">
-              <ArrowLeft className="h-4 w-4" /> Wróć do bloga
-            </Button>
-          </Link>
-        </Container>
-      </Section>
-    )
+    return <NotFoundPage title="Nie znaleziono artykułu" />
   }
 
   return (
@@ -57,9 +46,9 @@ export function BlogPostPage() {
             <p className="mt-2 text-sm text-slate-400">
               To statyczny content w TypeScript — łatwo podmienić na MDX lub headless CMS.
             </p>
-            <Link to="/contact" className="mt-4 inline-block">
-              <Button size="sm">Porozmawiajmy</Button>
-            </Link>
+            <Button asChild size="sm" className="mt-4">
+              <Link to="/contact">Porozmawiajmy</Link>
+            </Button>
           </div>
         </FadeIn>
       </Container>
